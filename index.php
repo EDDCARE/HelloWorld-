@@ -1,154 +1,212 @@
 ﻿<?php
 require_once("funciones.php");
 require_once("conexionBD.php");
-$link=conectarse();
+$link = conectarse();
+
 //****Verificar si el sistema se encuentra activo*****
-$estado=mysql_query("select * from general",$link);
-$leer= mysql_fetch_array($estado);
-if ($leer['activo']=="S") {
+$estado = mysqli_query($link, "SELECT * FROM general");
+$leer = mysqli_fetch_array($estado);
 
-if (!isset($_POST['envia_consulta'])) {
+if ($leer['activo'] == "S") {
+
+    if (!isset($_POST['envia_consulta'])) {
         include_once("ingresa.html");
-}
-else {
+    } else {
 
-//******VALIDACION DE INGRESO AL SISTEMA******
+        //******VALIDACION DE INGRESO AL SISTEMA******
+        if (!empty($_POST['documento'])) {
+            $DocEst = $_POST['documento'];
+        } else {
+            include_once("encabezado.html");
+            print "<strong>No ha escrito el número de documento<br />";
+            print "<br /><a href='javascript:history.go(-1)'>Volver al formulario</a></strong></div></body></html>";
+            exit;
+        }
 
-if ($_POST['documento']!="") {
-	$DocEst=$_POST['documento'];
-}
-else {
-	include_once("encabezado.html");
-	print "<strong>No ha escrito el número de documento<br />";
-	print"<br /><a href='javascript:history.go(-1)'>Volver al formulario</a></strong></div></body></html>";
-	exit;
-}
-//****Se valida la contraseña del estudiante si el sistema la solicita
-if ($leer['clave']=="S") {
-	if ($_POST['contra']!="") {
-		$ContraEst=md5($_POST['contra']);
-	}
-	else {
-		include_once("encabezado.html");
-		print "<strong>No ha escrito la contraseña de acceso<br />";
-		print"<br /><a href='javascript:history.go(-1)'>Volver al formulario</a></strong></div></body></html>";
-		exit;
-	}
-	$resp6=mysql_query(sprintf("select id from estudiantes where documento=%s AND clave=%s", comillas($DocEst), comillas($ContraEst)),$link);
-	if (!$row6= mysql_fetch_array($resp6)) {
-		include_once("encabezado.html");
-		print "<strong>La contraseña de acceso es inválida<br />";
-		print"<br /><a href='javascript:history.go(-1)'>Volver al formulario</a></strong></div></body></html>";
-		exit;
-	}
-}
-
+       
 //******Funcion para guardar los datos de control ******
-function LogControl($faccion2, $idest2) {
-	require_once("conexionBD.php");
-	$link=conectarse();
-	$ffecha=date("Y-m-d");
-	$fhora=date("G:i:s");
-	$fip = $_SERVER['REMOTE_ADDR'];
-	$cons_sql  = sprintf("INSERT INTO control(c_fecha,c_hora,c_ip,c_accion,c_idest) VALUES(%s,%s,%s,%s,%d)", comillas($ffecha), comillas($fhora), comillas($fip), comillas($faccion2),$idest2);
-	mysql_query($cons_sql,$link);
+	function LogControl($faccion2, $idest2) {
+    require_once("conexionBD.php");
+    $link = conectarse();
+
+    if (!$link) {
+        die("Error al conectar a la base de datos: " . mysqli_connect_error());
+    }
+
+    $ffecha = date("Y-m-d");
+    $fhora = date("G:i:s");
+    $fip = $_SERVER['REMOTE_ADDR'];
+    $cons_sql = "INSERT INTO control (c_fecha, c_hora, c_ip, c_accion, c_idest) VALUES (?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($link, $cons_sql);
+
+    if (!$stmt) {
+        die("Error al preparar la consulta: " . mysqli_error($link));
+    }
+
+    mysqli_stmt_bind_param($stmt, 'ssssd', $ffecha, $fhora, $fip, $faccion2, $idest2);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        die("Error al ejecutar la consulta: " . mysqli_error($link));
+    }
+
+    mysqli_stmt_close($stmt);
+    mysqli_close($link);
 }
+
+
 //***** VALIDAMOS QUE EL ESTUDIANTE NO HAYA VOTADO*****
-$resp2=mysql_query(sprintf("select id_estudiante from voto, estudiantes where documento=%s and id_estudiante=estudiantes.id",comillas($DocEst)),$link);
-        if ($row2= mysql_fetch_array($resp2)) {
-		$faccion="Intento-IngresoDuplicado";
-		LogControl($faccion,$row2['id_estudiante']);
-		include_once("encabezado.html");
-		print "<strong>No puede ingresar</strong><br />Su voto ya está registrado en el sistema.<br />";
-		print"<br /><strong><a href='javascript:history.go(-1)'>Volver al formulario</a></strong></div></body></html>";
-		exit;
-	}
+$resp2 = mysqli_query($link, "SELECT id_estudiante FROM voto, estudiantes WHERE documento='" . mysqli_real_escape_string($link, $DocEst) . "' AND id_estudiante=estudiantes.id");
 
-	$resp=mysql_query(sprintf("select id,nombres,apellidos,grado from estudiantes where documento=%s",comillas($DocEst)),$link);
-	if ($row= mysql_fetch_array($resp)) {
-		$IdEncrip=md5($row['id']);
-		//**** Creamos la cookie
+if ($row2 = mysqli_fetch_array($resp2)) {
+    $faccion = "Intento-IngresoDuplicado";
+    LogControl($faccion, $row2['id_estudiante']);
+    include_once("encabezado.html");
+    print "<strong>No puede ingresar</strong><br />Su voto ya está registrado en el sistema.<br />";
+    print "<br /><strong><a href='javascript:history.go(-1)'>Volver al formulario</a></strong></div></body></html>";
+    exit;
+}
+
+
+$resp = mysqli_query($link, "SELECT id, nombres, apellidos, grado FROM estudiantes WHERE documento='" . mysqli_real_escape_string($link, $DocEst) . "'");
+
+if ($row = mysqli_fetch_array($resp)) {
+    $IdEncrip = md5($row['id']);
+		
+        //**** Creamos la cookie
 		setcookie("DataVota", $DocEst, time()+3600);
-		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
-		echo '<html>';
+		
+        //**** Creamos la cookie es para pones ESpañol
+        echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
+		echo '<html lang="es">';
 		echo '<head>';
-		echo '<title>'.$leer['institucion'].' - Tarjetón de votación</title>';
-		echo '<link href="estilo4.css" rel="stylesheet" type="text/css" />';
 
+
+        //** titulu modificar mañana 29/11 es tl titulo de la cabecera
+
+		//echo '<title>'.$leer['institucion'].' - Tarjetón de votación</title>';
+		
+        //*** enlaces y css
+        echo '<meta charset="UTF-8" />';
+            echo '<meta name="viewport" content="width=device-width, initial-scale=1.0" />';
+            echo '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" integrity="sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I" crossorigin="anonymous"/>';
+            echo '<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.13.0/css/all.css"/>';
+            echo '<link rel="stylesheet" href="css/vote.css"/>';
+            echo '<title>Vota AG 2023</title>';
+
+        //**
 		echo '</head>';
-		echo '<body>';
-		echo '<div align="center">';
+		echo '<body class="text-center">';
+		
+        echo '<div class="row mx-3 bg-white px-2 shadow my-auto" id="body">';
+
 		$faccion="Ingreso-".$DocEst;
+
 		LogControl($faccion,$row['id']);
-		echo '<div class="nombrevota"; font-weight: bold;">ESTUDIANTE: '.$row['nombres'].' '.$row['apellidos'].'</div>';
-		echo '<img src="" style="display:scroll;position:fixed; top:35px;left:150px;" width="110" alt="" />';
-		echo '<img src="" style="display:scroll;position:fixed; top:35px;right:150px;" width="130" alt="" /><br />';
+        
+            echo '<h1 class="mt-3 mb-3 font-weight-150">ESTUDIANTE: '.$row['nombres'].' '.$row['apellidos'].'</h1>';
+            echo '<hr class="mx-auto"> </hr>';
+        
+
+        
+
         //Variable que guarda las categorias que se muestran en el tarjetón
         $catarj="";
 		echo '<form name="votacion" action="votacion.php" method="post">';
-		echo '<h2>'.$leer['institucion'].'<br />';
-		echo $leer['descripcion'].'<br /></h2>';
-		echo '<table style="font-weight:bold";>';						
-		echo '<thead><tr><th>Cédula de Sufragio</th></tr></thead>';		
+				
+        
+		echo '<table>';						
+		echo '<thead><tr><th>CEDULA DE SUFRAGIO</th></tr></thead>';		
 		echo '<tr>';
-		echo '<td>';
+		echo '<div>';
         //Leemos la lista de categorías que apareceran en el tarjeton
-		$resp5=mysql_query("select * from categorias order by id",$link);
-		while($row5 = mysql_fetch_array($resp5)) {
-            //Verificamos si existe un grado con el mismo nombre de la categoria
-            //para tener en cuenta para las votaciones de los candidatos por grado.
-            $vrep=0;
-            $resp9=mysql_query("select * from grados",$link);
-            while($row9 = mysql_fetch_array($resp9)) {
-                $grados[$row9["id"]]=$row9["grado"];
-                if (cambia_mayuscula($row5['nombre'])==cambia_mayuscula($row9['grado'])) {
-                    $vrep=1;
-                }
-            }
-        //Se muestran los candidatos por grado (pertenecen al mismo grado del estudiante) o de otras categor�as
-        if ((cambia_mayuscula($grados[$row['grado']])==cambia_mayuscula($row5['nombre']))  or ($vrep==0)) {
-			//*****Contar el total de candidatos por categoria******
-			$resp8=mysql_query(sprintf("select count(nombres) from candidatos where representante=%d",$row5['id'],$link));			
-			$row8 = mysql_fetch_array($resp8);
-			if ($row8[0]>0) {
-                $catarj = $catarj . $row5['id'] . ",";
-                echo '<div align="center">';
-    			echo '<table style="font-weight:bold";>';
-	    		echo '<thead><tr><th colspan="'.$row8[0].'" class="vto";>'.$row5['descripcion'].'</th></tr></thead>';
-		    	echo '<tr>';
-    			# MOSTRAR CANDIDATOS
-	    		$resp3=mysql_query(sprintf("select * from candidatos where representante=%d order by apellidos DESC",$row5['id']),$link);
-		    	while($row3 = mysql_fetch_array($resp3)) {
-    				echo '<td class="cen cd">';
-	    			if ((file_exists ('fotos/'.$row3['id'].'.jpg'))||(file_exists ('fotos/'.$row3['id'].'.png'))||(file_exists ('fotos/'.$row3['id'].'.gif'))) {
+		
+//Leemos la lista de categorías que aparecerán en el tarjetón
+$resp5 = mysqli_query($link, "SELECT * FROM categorias ORDER BY id");
 
-		    			if (file_exists ('fotos/'.$row3['id'].'.jpg')){
-			    			echo '<img src="fotos/'.$row3['id'].'.jpg" width="100" alt="Candidato" onClick = "document.getElementById (\'candidato'.$row3['id'] .'\').checked = true;" /><br />';
-				    	}
-					    elseif (file_exists ('fotos/'.$row3['id'].'.png')){
-    						echo '<img src="fotos/'.$row3['id'].'.png" width="100" alt="Candidato" onClick = "document.getElementById (\'candidato'.$row3['id'] .'\').checked = true;" /><br />';
-	    				}
-		    			elseif (file_exists ('fotos/'.$row3['id'].'.gif')){
-			    			echo '<img src="fotos/'.$row3['id'].'.gif" width="100" alt="Candidato" onClick = "document.getElementById (\'candidato'.$row3['id'] .'\').checked = true;" /><br />';
-				    	}
+while ($row5 = mysqli_fetch_array($resp5)) {
+    $vrep = 0;
 
-    				}
-	    			else {
-		    			echo '<img src="fotos/sinfoto.png" alt="Candidato" onClick = "document.getElementById (\'candidato'.$row3['id'] .'\').checked = true;" /><br />';
-			    	}
-    				echo '<input type="radio" name="categoria'.$row5['id'].'" id ="candidato'.$row3['id'].'" value="'.$row3['id'].'" />';
-	    			echo '<strong>'.$row3['nombres'].' '.$row3['apellidos'].'</strong>';
-		    		echo '</td>';
-    			}
-	    		echo '</tr>';
-		    	echo '</table></div><br />';
-            }
-		}
+    $resp9 = mysqli_query($link, "SELECT * FROM grados");
+
+    while ($row9 = mysqli_fetch_array($resp9)) {
+        $grados[$row9["id"]] = $row9["grado"];
+
+        // Realiza la comparación sin cambiar a mayúsculas
+        if ($row5['nombre'] == $row9['grado']) {
+            $vrep = 1;
         }
-		//***Si el tarjet�n no tiene candidatos se muestra un mensaje
+    }
+
+
+
+
+
+
+
+
+
+        //Se muestran los candidatos por grado (pertenecen al mismo grado del estudiante) o de otras categor?s
+        if ($grados[$row['grado']] == $row5['nombre'] || $vrep == 0) {
+    //*****Contar el total de candidatos por categoria******
+   $resp8 = mysqli_query($link, sprintf("select count(nombres) from candidatos where representante=%d", $row5['id']));
+$row8 = mysqli_fetch_array($resp8);
+if ($row8[0] > 0) {
+    $catarj = $catarj . $row5['id'] . ",";
+    echo '<div align="center">';
+    echo '<table>';
+    echo '<thead><tr><th colspan="' . $row8[0] . '" class="vto">' . $row5['descripcion'] . '</th></tr></thead>';
+    echo '<tr>';
+    // Resto del código
+
+
+
+        # MOSTRAR CANDIDATOS
+       $resp3 = mysqli_query($link, sprintf("select * from candidatos where representante=%d order by apellidos DESC", $row5['id']));
+
+while ($row3 = mysqli_fetch_array($resp3)) {
+    echo '<td class="cen cd">';
+    if ((file_exists('fotos/' . $row3['id'] . '.jpg')) || (file_exists('fotos/' . $row3['id'] . '.png')) || (file_exists('fotos/' . $row3['id'] . '.gif'))) {
+        if (file_exists('fotos/' . $row3['id'] . '.jpg')) {
+            echo '<img src="fotos/' . $row3['id'] . '.jpg" width="100%" height:"300px" alt="Candidato" onClick = "document.getElementById (\'candidato' . $row3['id'] . '\').checked = true;" /><br />';
+        } elseif (file_exists('fotos/' . $row3['id'] . '.png')) {
+            echo '<img src="fotos/' . $row3['id'] . '.png" width="100%" height:"300px" alt="Candidato" onClick = "document.getElementById (\'candidato' . $row3['id'] . '\').checked = true;" /><br />';
+        } elseif (file_exists('fotos/' . $row3['id'] . '.gif')) {
+            echo '<img src="fotos/' . $row3['id'] . '.gif" width="100%" height:"300px" alt="Candidato" onClick = "document.getElementById (\'candidato' . $row3['id'] . '\').checked = true;" /><br />';
+        }
+    } else {
+        echo '<img src="fotos/sinfoto.png" alt="Candidato" onClick = "document.getElementById (\'candidato' . $row3['id'] . '\').checked = true;" /><br />';
+    }
+
+    echo '<input type="radio" name="categoria' . $row5['id'] . '" id ="candidato' . $row3['id'] . '" value="' . $row3['id'] . '" />';
+    echo '<strong>' . $row3['nombres'] . ' ' . $row3['apellidos'] . '</strong>';
+    echo '</td>';
+}
+
+
+        echo '</tr>';
+        echo '</table>';
+
+        echo '<section id="submit" class="mb-3 mt-5">';
+        echo '<div class="form-check my-auto text-center">';
+        echo '<input class="form-check-input" type="checkbox" id="inlineFormCheck" required>';
+        echo '<label class="form-check-label ml-1" for="inlineFormCheck">He revisado mi voto y estoy listo para emitirlos.</label>';
+        echo '</div>';
+        echo '<button class="mt-3 btn btn-purple px-4 mx-auto" type="submit" name="envia_voto" value="Votar" >VOTAR</button>';
+        echo '</section>';
+        echo '</div>';
+        echo '</div>';
+
+
+        echo '</div12>';
+        echo '<br />';
+    }
+}
+}
+
+		//***Si el tarjet? no tiene candidatos se muestra un mensaje
         if ($catarj=="") {
             echo '<strong>No existen candidatos para votar, por favor comuníquese con el administrador del sistema.</strong>';
-            echo '</td>';		
+            echo '</div>';		
     		echo '</tr>';
 	    	echo '</table>';
 		    echo '</div><br />';
@@ -157,14 +215,23 @@ $resp2=mysql_query(sprintf("select id_estudiante from voto, estudiantes where do
             echo '</td>';		
 	    	echo '</tr>';
 		    echo '</table>';
-    		echo '</div><br />';
+    		echo '</div><br/>';
 	    	echo '<div class="cen">';
 		    echo '<input type="hidden" name="idvoto" value="'.$row['id'].'">';
-    		//Eliminamos la �ltima coma "," de la lista de categor�as
+    		//Eliminamos la ?ltima coma "," de la lista de categor?s
             $catarj=trim($catarj,',');
             echo '<input type="hidden" name="catarj" value="'.$catarj.'">';
-    		echo '<input type="submit" name="envia_voto" value="Votar" title="Registrar voto" />';
-	    	echo '</div>';
+    		//echo '<input type="submit" name="envia_voto" value="Votar" title="Registrar voto" />';
+            
+            //echo '<section id="submit" class="mb-3 mt-5">';
+            //echo '<div class="form-check my-auto text-center">';
+            //echo '<input class="form-check-input" type="checkbox" id="inlineFormCheck" required>';
+            //echo '<label class="form-check-label ml-1" for="inlineFormCheck">He revisado mis votos y estoy listo para emitirlos.</label>';
+            //echo '</div>';
+            //echo '<button class="mt-3 btn btn-purple px-4 mx-auto" type="submit" name="envia_voto" value="Votar" >VOTAR</button>';
+	    	//echo '</section>';
+            //echo '</div>';
+            //echo '</div>';
         }
 		echo '</form>';
 		echo '</body>';
@@ -187,5 +254,5 @@ else {
 	print "<strong>EL SISTEMA DE VOTACIÓN ESTA INACTIVO</strong><br />";
     print "(Comuniquese con el administrador del sistema)</div></body></html>";
 }
-mysql_close($link);
+mysqli_close($link);
 ?>

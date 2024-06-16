@@ -8,10 +8,11 @@ if(isset($_COOKIE['DataVota'])) {
 	if (isset($_POST['envia_voto'])) {
 		$VotoID = $_POST['idvoto'];
         //Lista de grados
-        $resp5=mysql_query("select * from categorias",$link);
-        while($row5 = mysql_fetch_array($resp5)) {
-            $categorias[$row5["id"]]=$row5["descripcion"];
-        }
+        
+		$resp5 = mysqli_query($link, "SELECT * FROM categorias");
+while ($row5 = mysqli_fetch_array($resp5)) {
+    $categorias[$row5["id"]] = $row5["descripcion"];
+}
 
 		//Verificar que se haya seleccionado el(los) candidato(s) para registrar la votaci�n		
         $veri_cat = explode(',', $_POST['catarj']);
@@ -26,38 +27,53 @@ if(isset($_COOKIE['DataVota'])) {
 		
 
 		//***** VALIDAMOS QUE EL ESTUDIANTE NO HAYA VOTADO*****
-		$resp=mysql_query(sprintf("select id from voto where id_estudiante=%d",$VotoID),$link);
-	        if ($row= mysql_fetch_array($resp)) {
-               		//******Guardamos los datos de control ******
-	                $ffecha=date("Y-m-d");
-        	        $fhora=date("G:i:s");
-	                $fip = $_SERVER['REMOTE_ADDR'];
-        	        $faccion="Intento-DuplicarVoto";
-	                $cons_sql5  = sprintf("INSERT INTO control(c_fecha,c_hora,c_ip,c_accion,c_idest) VALUES(%s,%s,%s,%s,%d)", comillas($ffecha), comillas($fhora), comillas($fip), comillas($faccion),$VotoID);
-			mysql_query($cons_sql5,$link);
-		        include_once("encabezado.html");
-		        print "<strong>Su voto ya se encuentra registrado en el sistema.</strong><br />";
-		        print"<br /><strong><a href='salir.php'>Finalizar</a></strong></div></body></html>";
-		        exit;
-		}
-				//****Registrar votaci�n****
-		        foreach($veri_cat as $valor) { 
-					$cons_sql = sprintf("INSERT INTO voto(id_estudiante,candidato) VALUES(%d,%d)",$VotoID, $_POST['categoria'.$valor]);
-					mysql_query($cons_sql,$link);
-				}		
+		$resp = mysqli_query($link, sprintf("SELECT id FROM voto WHERE id_estudiante=%d", $VotoID));
 
-               //******Guardamos los datos de control ******
-                $ffecha=date("Y-m-d");
-                $fhora=date("G:i:s");
-                $fip = $_SERVER['REMOTE_ADDR'];
-                $faccion="Voto-Registrado";
-                $cons_sql5  = sprintf("INSERT INTO control(c_fecha,c_hora,c_ip,c_accion,c_idest) VALUES(%s,%s,%s,%s,%d)", comillas($ffecha), comillas($fhora), comillas($fip), comillas($faccion),$VotoID);
-		mysql_query($cons_sql5,$link);
-	        include_once("encabezado2.html");
-	        print "<strong>Muchas gracias se registro su voto.</strong><br />";
-	        print"<br /><strong><a href='salir.php'>Finalizar</a></strong></div></body></html>";
+if ($row = mysqli_fetch_array($resp)) {
+    // Registro de intento de duplicación
+    $ffecha = date("Y-m-d");
+    $fhora = date("G:i:s");
+    $fip = $_SERVER['REMOTE_ADDR'];
+    $faccion = "Intento-DuplicarVoto";
+
+    $cons_sql5 = "INSERT INTO control(c_fecha, c_hora, c_ip, c_accion, c_idest) VALUES (?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($link, $cons_sql5);
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, 'ssssd', $ffecha, $fhora, $fip, $faccion, $VotoID);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    } else {
+        die("Error al preparar la consulta de control: " . mysqli_error($link));
+    }
+
+    include_once("encabezado.html");
+    print "<strong>Su voto ya se encuentra registrado en el sistema.</strong><br />";
+    print "<br /><strong><a href='salir.php'>Finalizar</a></strong></div></body></html>";
+    exit;
+}
+
+				//****Registrar votaci�n****
+		      //****Registrar votación****
+foreach ($veri_cat as $valor) { 
+    $cons_sql = sprintf("INSERT INTO voto(id_estudiante, candidato) VALUES(%d, %d)", $VotoID, $_POST['categoria' . $valor]);
+    mysqli_query($link, $cons_sql);
+}
+
+//******Guardamos los datos de control ******
+$ffecha = date("Y-m-d");
+$fhora = date("G:i:s");
+$fip = $_SERVER['REMOTE_ADDR'];
+$faccion = "Voto-Registrado";
+$cons_sql5 = sprintf("INSERT INTO control(c_fecha, c_hora, c_ip, c_accion, c_idest) VALUES(%s, %s, %s, %s, %d)", comillas($ffecha), comillas($fhora), comillas($fip), comillas($faccion), $VotoID);
+mysqli_query($link, $cons_sql5);
+
+include_once("encabezado2.html");
+print "<strong>....</strong><br />";
+print "<br /><strong><a href='salir.php'>Finalizar</a></strong></div></body></html>";
+
 	}
 }
-mysql_close($link);
+mysqli_close($link);
 ?>
 

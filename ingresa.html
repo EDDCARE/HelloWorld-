@@ -1,60 +1,63 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-   <?php
+<!-- mi midifucacion  -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" integrity="sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I" crossorigin="anonymous">
+<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.13.0/css/all.css">
+<link rel="stylesheet" href="css/index.css">
+<title>2020 Election</title>
+<!-- mi midifucacion -->
+
+ <!-- imagen de istitucion y onpe -->
+<!--***<?php
    echo '<title>'.$leer['institucion'].' </title>';
    ?>
-<link href="estilo3.css" rel="stylesheet" type="text/css" />
+
 </head>
-<body OnLoad="document.consulta.documento.focus();">
+
 <?php include_once("java.html"); ?>
-<img src="" style="display:scroll;position:absolute; top:5px;" width="130" alt="" /><br />
+<img src="iconos/ag.png" style="display:scroll;position:absolute; top:5px;" width="130" alt="AG" /><br />
+<img src="iconos/onpe.png" style="display:scroll;position:fixed; top:10px; right:130px;" width="130" alt="AG" /><br />
 <?php
 echo '<h2>'.$leer['institucion'].'<br />';
 echo $leer['descripcion'].'</h2><br />';
 ?>
-<table style="float:left; width:60%; margin-left:20px; margin-right:30px;">
-<tr>
-<td>
+ imagen de istitucion y onpe -->
 
-<table style="margin-left:40px; font-size:12pt;">
-<tr><td></td><td><strong>Para realizar el proceso de votación siga los siguientes tres pasos:</strong></td></tr>
-<tr><td><img src="iconos/n1.png" style="float:left;" width="30px" alt="#1" /></td>
-<td>Ingrese al sistema de votación, escribiendo su número de documento (costado derecho de esta página).</td></tr>
 
-<tr><td><img src="iconos/n2.png" style="float:left;" width="30px" alt="#1" /></td>
-<td>Al ingresar al sistema encontrará el tarjetón electoral para votar por sus representantes preferidos. Seleccione los de su preferencia dando clic sobre la foto.</td></tr>
+<!-- mi midifucacion -->
+<body class="text-center"></body>
 
-<tr><td><img src="iconos/n3.png" style="float:left;" width="30px" alt="#1" /></td>
-<td>Para registrar su voto de clic en el botón <strong>votar</strong></td></tr>
+<div class="container shadow">
+	<div class="row">
+		<div class="col-6 my-auto">
+			<img src="images/undraw_voting_nvu7.png" alt="login" class="img-fluid">
+		</div>
 
-</table>
-</td>
-</tr>
-</table>
+		<div class="col-6 my-auto">
+		
+			<form  name="consulta" class="form-signin" method="POST" action="index.php">
+				<h1 class="h3 mb-3 font-weight-300">Ingreso al sistema</h1>
 
-<form name="consulta" action="index.php" method="post">
-<table border="2">
-<tr><td colspan="2" style="text-align:center;"><strong>Ingreso al sistema</strong></td></tr>
-<tr>
-<td><label for="documento">Documento del estudiante:</label></td>
-<td><input type="text" autocomplete="off" maxlength="8" name="documento" size="20" maxlength="50" title="Escriba el documento del estudiante" /></td>
-</tr>
+				
+				<div class="input-group mb-2 flex-nowrap">
+					<span class="input-group-text text-center" id="basic-addon1"><i class="fas fa-user-alt"></i></span>
+					<input type="text" name="documento" id="username" class="form-control" placeholder="Numero de DNI" aria-label="User ID" aria-describedby="basic-addon1"autocomplete="off" required>
+				</div>
+				
+				<!--<div class="input-group mb-3 flex-nowrap pass">
+					<span class="input-group-text text-center" id="basic-addon2"><i class="fas fa-key"></i></span>
+					<input type="password" name="contra" id="password" class="form-control"	placeholder="Password"	aria-label="Password" aria-describedby="basic-addon2"	data-toggle="password"	required>
+					<span class="input-group-text text-center eye" id="basic-addon3"><i class="fad fa-eye"></i></span>
+				</div> --->
+				
+				<button class="mt-3 btn btn-purple px-4" type="submit" name="envia_consulta" value="Ingresar" >Log in</button>
 
-<?php
-if ($leer['clave']=="S") {
-	echo '<tr>';
-	echo '<td><label for="contra">Contraseña de acceso:</label></td>';
-	echo '<td><input type="password" name="contra" size="20" maxlength="50" title="Escriba la contraseña de acceso" /></td>';
-	echo '</tr>';
-}
-?>
-
-<tr><td colspan="2" class="cen">
-<input type="submit" name="envia_consulta" value="Ingresar" title="Ingresar al sistema" />
-</td></tr>
-</table>
-</form>
+			</form>
+		</div>
+	</div>
+</div>
 </body>
 </html>

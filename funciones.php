@@ -149,27 +149,27 @@ function valida($arreglo) {
 	}
 }
 
-//función que borra espacios de más
+//funciï¿½n que borra espacios de mï¿½s
 function borra_espacios($cadena) {
 	$patron=array("/^[ ]+/m", "/[ ]+/m", "/[ ]+\$/m");
 	$reemplazo=array(""," ","");
 	return preg_replace($patron,$reemplazo,$cadena);
 }
-//Funciónn convertir a mayúsculas
+//Funciï¿½nn convertir a mayï¿½sculas
 function cambia_mayuscula($cadena) {
-	$mayuscula="ABCDEFGHIJKLMNÑOPQRSTUVWXYZÁÉÍÓÚÜ";
-	$minuscula="abcdefghijklmnñopqrstuvwxyzáéíóúü";
+	$mayuscula="ABCDEFGHIJKLMNï¿½OPQRSTUVWXYZï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+	$minuscula="abcdefghijklmnï¿½opqrstuvwxyzï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
 	return strtr($cadena,$minuscula,$mayuscula);
 }
-//Función convertir a minúsculas
+//Funciï¿½n convertir a minï¿½sculas
 function cambia_minuscula($cadena) {
-	$mayuscula="ABCDEFGHIJKLMNÑOPQRSTUVWXYZÁÉÍÓÚÜ";
-	$minuscula="abcdefghijklmnñopqrstuvwxyzáéíóúü";
+	$mayuscula="ABCDEFGHIJKLMNï¿½OPQRSTUVWXYZï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+	$minuscula="abcdefghijklmnï¿½opqrstuvwxyzï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
 	return strtr($cadena,$mayuscula,$minuscula);
 }
-//Función que genera nombre de usuario
+//Funciï¿½n que genera nombre de usuario
 function nombre_usuario($cadena) {	
-	$acento=array("á"=>"a","é"=>"e","í"=>"i","ó"=>"o","ú"=>"u","ü"=>"u");
+	$acento=array("ï¿½"=>"a","ï¿½"=>"e","ï¿½"=>"i","ï¿½"=>"o","ï¿½"=>"u","ï¿½"=>"u");
 	$divide=explode(" ", $cadena);
 	$cont=count($divide);
 	if ($cont>2) 
@@ -179,26 +179,26 @@ function nombre_usuario($cadena) {
 	return strtr(cambia_minuscula($nombre), $acento);
 }
 
-//función que valida valores alfabéticos
+//funciï¿½n que valida valores alfabï¿½ticos
 function alfa($cadena) {
-	// Función ereg() no soportada en php 5.3
-	//return(ereg("^[a-zñáéíóúü A-ZÑÁÉÍÓÚÜ]+$",$cadena));	
-	return(preg_match("/^[a-zñáéíóúü A-ZÑÁÉÍÓÚÜ]+$/",$cadena));	
+	// Funciï¿½n ereg() no soportada en php 5.3
+	//return(ereg("^[a-zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ A-Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]+$",$cadena));	
+	return(preg_match("/^[a-zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ A-Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]+$/",$cadena));	
 }
 
-//función que valida valores alfanuméricos
+//funciï¿½n que valida valores alfanumï¿½ricos
 function alfanum($cadena) {
 	//return(ereg("^[a-zA-Z0-9]+$",$cadena));	
 	return(preg_match("/^[a-zA-Z0-9]+$/",$cadena));	
 }
 
-//función que valida valores numéricos
+//funciï¿½n que valida valores numï¿½ricos
 function num($cadena) {
 	//return(ereg("^[0-9]+$",$cadena));	
 	return(preg_match("/^[0-9]+$/",$cadena));
 }
 
-//Función que valida direcciones de correo
+//Funciï¿½n que valida direcciones de correo
 function valida_email($correo) {
     //return (ereg('^[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+'.
     //              '@'.
@@ -209,17 +209,17 @@ function valida_email($correo) {
 
 }
 
-//Función que valida fecha con formato AAAA-MM-DD
+//Funciï¿½n que valida fecha con formato AAAA-MM-DD
 function valida_fecha($cadena) {
 	//$patron="^([[:digit:]]{4})-([[:digit:]]{1,2})-([[:digit:]]{1,2})$";
 	//if (ereg($patron,$cadena,$coincide)) {
 	$patron="/^([[:digit:]]{4})-([[:digit:]]{1,2})-([[:digit:]]{1,2})$/";
 	if (preg_match($patron,$cadena,$coincide)) {
-		//comprabación del año
+		//comprabaciï¿½n del aï¿½o
 		if (($coincide[1]<1900) || ($coincide[1]>3000)) return false;
-		//comprobación del mes
+		//comprobaciï¿½n del mes
 		if (($coincide[2]<1) || ($coincide[2]>12)) return false;
-		//comprobación del día
+		//comprobaciï¿½n del dï¿½a
 		if (($coincide[3]<1) || ($coincide[3]>31)) return false;
 	return true;
 	}
@@ -228,18 +228,42 @@ function valida_fecha($cadena) {
 	}
 }
 
-//función que agrega comillas a cadenas de caracteres
-function comillas($valor) {
+//funciï¿½n que agrega comillas a cadenas de caracteres
+//*//function comillas($valor) {
 // Retirar las barras si es necesario
-	if (get_magic_quotes_gpc()) {
-		$valor = stripslashes($valor);
-	}
+	//if (get_magic_quotes_gpc()) {
+	//	$valor = stripslashes($valor);
+	//}
 // Colocar comillas si no es un entero
-	if (!is_int($valor)) {
-		$valor = "'" . addslashes($valor) . "'";
-	}
-	return $valor;
+	//if (!is_int($valor)) {
+//		$valor = "'" . addslashes($valor) . "'";
+//	}
+//	return $valor;
+//}
+
+function comillas($valor) {
+    // Colocar comillas si no es un entero
+    if (!is_int($valor)) {
+        // Utilizar mysqli_real_escape_string para escapar caracteres especiales
+        global $link;  // Asumiendo que $link es tu conexiÃ³n a la base de datos
+        $valor = "'" . mysqli_real_escape_string($link, $valor) . "'";
+    }
+    return $valor;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Obtener la fecha actual del sistema en el formato yyyy-mm-dd
 function fecha_actual() {
@@ -248,7 +272,7 @@ function fecha_actual() {
 	return $fecha;
 }
 
-//Función que controla el acceso autorizado de las páginas.
+//Funciï¿½n que controla el acceso autorizado de las pï¿½ginas.
 //y retorna el -id- de acuerdo al tipo de usuario.
 function restringe($tipo_user) {
 	require_once("login/autenticacion.php");
@@ -268,25 +292,25 @@ function restringe($tipo_user) {
 			}
 		}
 	    	if (!$permiso) {
-			print "No tiene los privilegios necesarios para ingresar a esta página";
-			//*****OJO:Escribir aquí link para redireccionar****
+			print "No tiene los privilegios necesarios para ingresar a esta pï¿½gina";
+			//*****OJO:Escribir aquï¿½ link para redireccionar****
 			die();
 		}
 		else {
 		        print "usuario ->". $a->getUsername();
-		        print "::<a title='Salir de la sesión' href='$wwwroot/login/logout.php'>Salir</a><br /><br />";
+		        print "::<a title='Salir de la sesiï¿½n' href='$wwwroot/login/logout.php'>Salir</a><br /><br />";
 			return $sql;
 		}
 	}
 	else {
-	        if($a->getStatus()==AUTH_WRONG_LOGIN) print "<p align='center'><b>Datos inválidos</b></p>";
-	        if($a->getStatus()==AUTH_EXPIRED) print "<p align='center'><b>Su sesión ha expirado</b></p>";
-	        if($a->getStatus()==AUTH_IDLED) print "<p align='center'><b>Estuvo inactivo por más de 30 minutos, su sesión fue cerrada</b></p>";
+	        if($a->getStatus()==AUTH_WRONG_LOGIN) print "<p align='center'><b>Datos invï¿½lidos</b></p>";
+	        if($a->getStatus()==AUTH_EXPIRED) print "<p align='center'><b>Su sesiï¿½n ha expirado</b></p>";
+	        if($a->getStatus()==AUTH_IDLED) print "<p align='center'><b>Estuvo inactivo por mï¿½s de 30 minutos, su sesiï¿½n fue cerrada</b></p>";
 	        die();
 	}
 }
 
-//*****Función que retorna los datos del usuario recibiendo como parámetro
+//*****Funciï¿½n que retorna los datos del usuario recibiendo como parï¿½metro
 //*****el id_usuario
 
 function datos_usuario($id_usuario) {
@@ -309,7 +333,7 @@ function datos_usuario($id_usuario) {
 	return $datos;
 }
 
-//*****Función que retorna la edad recibiendo como parámetro la f_nacimiento,
+//*****Funciï¿½n que retorna la edad recibiendo como parï¿½metro la f_nacimiento,
 //*****en formato AAAA-MM-DD
 function num_years($fecha) {
 	//****Crea la matriz asociativa: [0]=>AAAA,[1]=>MM,[2]=>DD.
@@ -326,12 +350,35 @@ function num_years($fecha) {
         return $fyear;
 }
 
-// Función para redimensionar imágenes
+// Funciï¿½n para redimensionar imï¿½genes
 function escala($url,$base){
 	$datos = GetImageSize($url) OR die("Imagen no vÃ¡lida");
 	$xp = $datos[0]/$base;
 	$yp = $datos[1]/$xp;
 	echo '<div class="cen"> <img src="'.$url.'" width="'.$base.'" height="'.$yp.'" border="1" alt="foto" / ><br /><br / ></div>';
 }
+
+function obtenerDireccionIP() {
+    // Primero, intentamos obtener la direcciÃ³n IP desde el encabezado 'X-Forwarded-For' (si estÃ¡ disponible y seguro)
+    if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && filter_var($_SERVER['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_IP)) {
+        return $_SERVER['HTTP_X_FORWARDED_FOR'];
+    }
+
+    // Si el encabezado 'X-Forwarded-For' no estÃ¡ presente o no es vÃ¡lido, obtenemos la direcciÃ³n IP directamente
+    // desde el encabezado 'REMOTE_ADDR' (esto puede no ser seguro si se estÃ¡ utilizando un proxy pÃºblico)
+    if (isset($_SERVER['REMOTE_ADDR']) && filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+    // Si no podemos obtener la direcciÃ³n IP de ninguna manera, devolvemos un valor predeterminado
+    return '0.0.0.0';
+}
+
+
+
+
+
+
+
 
 ?>
